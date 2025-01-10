@@ -2,12 +2,8 @@
 	"name": "Java",
 	"image": "mcr.microsoft.com/devcontainers/java:1-21",
 	"features": {
-		"ghcr.io/devcontainers/features/java:1": {
-			"version": "21",
-			"installMaven": "true",
-			"mavenVersion": "latest",
-			"installGradle": "false"
-		}
+		"ghcr.io/devcontainers/features/java:1": {},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {}
 	},
 	// Configure tool-specific properties.
 	"customizations": {
