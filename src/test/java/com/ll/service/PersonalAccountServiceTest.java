@@ -5,16 +5,15 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import com.ll.model.PersonalAccount;
 import com.ll.repository.AccountRepository;
 
-@SpringBootTest(properties = {
-    "spring.data.mongodb.uri=mongodb://localhost:27017/testdb",
-    "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration"
+@SpringBootTest
+@TestPropertySource(properties = {
+    "spring.data.mongodb.uri=mongodb://localhost:27017/testdb"
 })
 public class PersonalAccountServiceTest {
 
