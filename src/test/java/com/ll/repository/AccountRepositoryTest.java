@@ -23,7 +23,7 @@ class AccountRepositoryTest {
 
   @BeforeEach
   void setUp() {
-    testAccount = new PersonalAccount("test@example.com", "password123");
+    testAccount = new PersonalAccount("octocat@github.com", "github123");
     accountRepository.save(testAccount);
   }
 
@@ -35,20 +35,20 @@ class AccountRepositoryTest {
   @Test
   void testDeletePersonalAccountByEmail() {
     // Given
-    assertTrue(accountRepository.existsByEmail("test@example.com"));
+    assertTrue(accountRepository.existsByEmail("octocat@github.com"));
 
     // When
-    accountRepository.deletePersonalAccountByEmail("test@example.com");
+    accountRepository.deletePersonalAccountByEmail("octocat@github.com");
 
     // Then
-    assertFalse(accountRepository.existsByEmail("test@example.com"));
+    assertFalse(accountRepository.existsByEmail("octocat@github.com"));
   }
 
   @Test
   void testExistsByEmail() {
     // Given & When
-    boolean exists = accountRepository.existsByEmail("test@example.com");
-    boolean notExists = accountRepository.existsByEmail("nonexistent@example.com");
+    boolean exists = accountRepository.existsByEmail("octocat@github.com");
+    boolean notExists = accountRepository.existsByEmail("nonexistent@github.com");
 
     // Then
     assertTrue(exists);
@@ -58,26 +58,50 @@ class AccountRepositoryTest {
   @Test
   void testFindPersonalAccountByEmail() {
     // When
-    var foundAccount = accountRepository.findPersonalAccountByEmail("test@example.com");
-    var notFoundAccount = accountRepository.findPersonalAccountByEmail("nonexistent@example.com");
+    var foundAccount = accountRepository.findPersonalAccountByEmail("octocat@github.com");
+    var notFoundAccount = accountRepository.findPersonalAccountByEmail("nonexistent@github.com");
 
     // Then
     assertTrue(foundAccount.isPresent());
-    assertEquals("test@example.com", foundAccount.get().getEmail());
+    assertEquals("octocat@github.com", foundAccount.get().getEmail());
     assertTrue(notFoundAccount.isEmpty());
   }
 
   @Test
   void testSavePersonalAccount() {
     // Given
-    PersonalAccount newAccount = new PersonalAccount("new@example.com", "newpass123");
+    PersonalAccount newAccount = new PersonalAccount("actions-bot@github.com", "actions123");
 
     // When
     PersonalAccount saved = accountRepository.savePersonalAccount(newAccount);
 
     // Then
     assertNotNull(saved.getId());
-    assertEquals("new@example.com", saved.getEmail());
-    assertTrue(saved.verifyPassword("newpass123"));
+    assertEquals("actions-bot@github.com", saved.getEmail());
+    assertTrue(saved.verifyPassword("actions123"));
+  }
+
+  @Test
+  void testCompletePersonalAccountCRUDOperations() {
+    // Create
+    PersonalAccount newAccount = new PersonalAccount("developer@github.com", "dev123");
+    PersonalAccount created = accountRepository.savePersonalAccount(newAccount);
+    assertNotNull(created.getId());
+    assertEquals("developer@github.com", created.getEmail());
+
+    // Read
+    var found = accountRepository.findPersonalAccountByEmail("developer@github.com");
+    assertTrue(found.isPresent());
+    assertEquals(created.getId(), found.get().getId());
+
+    // Update
+    found.get().setEmail("senior-dev@github.com");
+    PersonalAccount updated = accountRepository.savePersonalAccount(found.get());
+    assertEquals("senior-dev@github.com", updated.getEmail());
+    assertEquals(created.getId(), updated.getId());
+
+    // Delete
+    accountRepository.deletePersonalAccountByEmail("senior-dev@github.com");
+    assertFalse(accountRepository.existsByEmail("senior-dev@github.com"));
   }
 }
