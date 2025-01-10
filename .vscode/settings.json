@@ -19,5 +19,6 @@
   "terminal.integrated.fontSize": 13,
   "workbench.colorTheme": "Default Light+",
   "workbench.fontAliasing": "antialiased",
-  "workbench.statusBar.visible": true
+  "workbench.statusBar.visible": true,
+  "java.configuration.updateBuildConfiguration": "automatic"
 }
