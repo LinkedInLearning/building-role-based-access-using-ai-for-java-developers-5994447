@@ -2,6 +2,8 @@ package com.ll.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Optional;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +53,8 @@ public class PersonalAccountServiceTest {
     PersonalAccount account = personalAccountService.createPersonalAccount("test@example.com", "password123");
 
     // Test successful retrieval
-    PersonalAccount retrieved = personalAccountService.getPersonalAccount(account, account.getId());
+    PersonalAccount retrieved = personalAccountService.getPersonalAccount(account, account.getId())
+        .orElseThrow(() -> new IllegalArgumentException("Account not found"));
     assertEquals(account.getId(), retrieved.getId());
     assertEquals(account.getEmail(), retrieved.getEmail());
 
@@ -82,9 +85,8 @@ public class PersonalAccountServiceTest {
 
     // Test successful deletion
     personalAccountService.deletePersonalAccount(account, account.getId());
+    Optional<PersonalAccount> retrievedAccount = personalAccountService.getPersonalAccount(account, account.getId());
 
-    assertThrows(IllegalArgumentException.class, () -> {
-      personalAccountService.getPersonalAccount(account, account.getId());
-    });
+    assertFalse(retrievedAccount.isPresent());
   }
 }

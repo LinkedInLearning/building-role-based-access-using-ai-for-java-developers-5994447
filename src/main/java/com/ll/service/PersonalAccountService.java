@@ -2,6 +2,9 @@ package com.ll.service;
 
 import com.ll.model.PersonalAccount;
 import com.ll.repository.AccountRepository;
+
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,7 +27,7 @@ public class PersonalAccountService {
     return accountRepository.savePersonalAccount(account);
   }
 
-  public PersonalAccount getPersonalAccount(PersonalAccount requestingAccount, String id) {
+  public Optional<PersonalAccount> getPersonalAccount(PersonalAccount requestingAccount, String id) {
     if (!requestingAccount.getId().equals(id)) {
       throw new SecurityException("Not authorized to access this account");
     }
@@ -35,8 +38,7 @@ public class PersonalAccountService {
             throw new IllegalArgumentException("Account is not a personal account");
           }
           return (PersonalAccount) account;
-        })
-        .orElseThrow(() -> new IllegalArgumentException("Account not found with id: " + id));
+        });
   }
 
   public PersonalAccount updatePersonalAccount(PersonalAccount requestingAccount, String id,
@@ -67,7 +69,7 @@ public class PersonalAccountService {
     return accountRepository.savePersonalAccount(existingAccount);
   }
 
-  public void deletePersonalAccount(PersonalAccount requestingAccount, String id) {
+  public boolean deletePersonalAccount(PersonalAccount requestingAccount, String id) {
     if (!requestingAccount.getId().equals(id)) {
       throw new SecurityException("Not authorized to delete this account");
     }
@@ -77,6 +79,12 @@ public class PersonalAccountService {
     }
 
     accountRepository.deleteById(id);
+    return true;
   }
 
+  public Optional<PersonalAccount> getPersonalAccount(String id) {
+    return accountRepository.findById(id)
+        .filter(account -> account instanceof PersonalAccount)
+        .map(account -> (PersonalAccount) account);
+  }
 }
