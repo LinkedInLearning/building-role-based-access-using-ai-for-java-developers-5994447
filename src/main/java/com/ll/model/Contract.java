@@ -34,11 +34,11 @@ public final class Contract extends Resource<Contract> {
   }
 
   // Add setters for MongoDB mapping
-  protected void setName(String name) {
+  public void setName(String name) {
     this.name = name;
   }
 
-  protected void setDescription(String description) {
+  public void setDescription(String description) {
     this.description = description;
   }
 }
