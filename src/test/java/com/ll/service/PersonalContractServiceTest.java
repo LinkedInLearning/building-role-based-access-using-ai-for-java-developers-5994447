@@ -2,6 +2,7 @@ package com.ll.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -78,7 +79,8 @@ public class PersonalContractServiceTest {
     // 4. Update the contract
     String updatedName = "Updated Contract";
     String updatedDescription = "Updated Description";
-    Contract updatedContract = personalContractService.updateContract(aliceAccount, contract.getId(), updatedName, updatedDescription);
+    Contract updatedContract = personalContractService.updateContract(aliceAccount, contract.getId(), updatedName,
+        updatedDescription);
 
     // 5. Validate contract update
     assertEquals(updatedName, updatedContract.getName());
@@ -92,4 +94,44 @@ public class PersonalContractServiceTest {
     assertEquals(0, contractRepository.count());
   }
 
+  /**
+   * 1. Create a Personal Account for Alice
+   * 2. Create a Contract for Alice
+   * 3. Validate that contract has been created.
+   * 4. Create a Personal Account for Bob
+   * 5. Try to update the contract as Bob
+   * 6. Validate that contract update fails.
+   */
+  @Test
+  void testNonOwnerContractFlow() {
+    // 1. Create a Personal Account for Alice
+    PersonalAccount aliceAccount = new PersonalAccount("alice@github.com", "password123");
+    aliceAccount = accountRepository.save(aliceAccount);
+
+    // 2. Create a Contract for Alice
+    String contractName = "Alice Contract";
+    String contractDescription = "Alice's Test Contract";
+    Contract contract = personalContractService.createContract(aliceAccount, contractName, contractDescription);
+
+    // 3. Validate that contract has been created
+    assertNotNull(contract);
+    assertEquals(contractName, contract.getName());
+    assertEquals(aliceAccount.getId(), contract.getOwner().getId());
+
+    // 4. Create a Personal Account for Bob
+    final PersonalAccount bobAccount = accountRepository.save(new PersonalAccount("bob@github.com", "password456"));
+
+    // 5 & 6. Try to update the contract as Bob and validate it fails
+    String updatedName = "Bob's Modified Contract";
+    String updatedDescription = "Bob's Modified Description";
+    assertThrows(IllegalArgumentException.class, () -> {
+        personalContractService.updateContract(bobAccount, contract.getId(), updatedName, updatedDescription);
+    });
+
+    // Verify the contract remains unchanged
+    Contract unchangedContract = contractRepository.findById(contract.getId()).get();
+    assertEquals(contractName, unchangedContract.getName());
+    assertEquals(contractDescription, unchangedContract.getDescription());
+    assertEquals(aliceAccount.getId(), unchangedContract.getOwner().getId());
+  }
 }
