@@ -3,6 +3,7 @@ package com.ll.repository;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterEach;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.ll.model.OrganizationAccount;
+import com.ll.model.OrganizationRole;
 import com.ll.model.PersonalAccount;
 
 @SpringBootTest
@@ -146,5 +148,67 @@ class AccountRepositoryTest {
     // Delete
     accountRepository.deleteOrganizationById(updatedOrg.getId());
     assertTrue(accountRepository.findOrganizationById(updatedOrg.getId()).isEmpty());
+  }
+
+  /**
+   * 1. Create a Personal Account for Alice
+   * 2. Create a Personal Account for Bob
+   * 3. Create a Personal Account for Charlie
+   * 4. Create an Organization Account for Alice
+   * 5. Validate that the account was created
+   * 6. Add Bob as Editor to the Organization
+   * 7. Add Charlie as Viewer to the Organization
+   * 8. Validate that Bob and Charlie are members of the Organization along with
+   * their roles
+   * 9. Remove Charlie from the Organization
+   * 10. Validate that Charlie is no longer a member of the Organization
+   * 11. Change Bob's role to Viewer
+   * 12. Validate that Bob's role is now Viewer
+   */
+  @Test
+  void testOrganizationMemberships() {
+    // Create personal accounts
+    PersonalAccount aliceAccount = accountRepository.savePersonalAccount(
+        new PersonalAccount("alice@github.com", "alice123"));
+    PersonalAccount bobAccount = accountRepository.savePersonalAccount(
+        new PersonalAccount("bob@github.com", "bob123"));
+    PersonalAccount charlieAccount = accountRepository.savePersonalAccount(
+        new PersonalAccount("charlie@github.com", "charlie123"));
+
+    // Create organization
+    OrganizationAccount orgAccount = new OrganizationAccount(aliceAccount.getId(), "Alice's Org");
+    OrganizationAccount savedOrg = accountRepository.saveOrganizationAccount(orgAccount);
+
+    // Verify organization creation
+    assertNotNull(savedOrg.getId());
+    assertEquals(aliceAccount.getId(), savedOrg.getOwnerId());
+    assertEquals(OrganizationRole.OWNER, savedOrg.getMemberRole(aliceAccount.getId()));
+
+    // Add Bob as Editor
+    savedOrg.addMember(bobAccount.getId(), OrganizationRole.EDITOR);
+    // Add Charlie as Viewer
+    savedOrg.addMember(charlieAccount.getId(), OrganizationRole.VIEWER);
+    savedOrg = accountRepository.saveOrganizationAccount(savedOrg);
+
+    // Verify memberships
+    assertTrue(savedOrg.isMember(bobAccount.getId()));
+    assertTrue(savedOrg.isMember(charlieAccount.getId()));
+    assertEquals(OrganizationRole.EDITOR, savedOrg.getMemberRole(bobAccount.getId()));
+    assertEquals(OrganizationRole.VIEWER, savedOrg.getMemberRole(charlieAccount.getId()));
+
+    // Remove Charlie
+    savedOrg.removeMember(charlieAccount.getId());
+    savedOrg = accountRepository.saveOrganizationAccount(savedOrg);
+
+    // Verify Charlie's removal
+    assertFalse(savedOrg.isMember(charlieAccount.getId()));
+    assertNull(savedOrg.getMemberRole(charlieAccount.getId()));
+
+    // Change Bob's role to Viewer
+    savedOrg.updateMemberRole(bobAccount.getId(), OrganizationRole.VIEWER);
+    savedOrg = accountRepository.saveOrganizationAccount(savedOrg);
+
+    // Verify Bob's role change
+    assertEquals(OrganizationRole.VIEWER, savedOrg.getMemberRole(bobAccount.getId()));
   }
 }
