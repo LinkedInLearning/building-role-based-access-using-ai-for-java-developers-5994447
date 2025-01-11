@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import com.ll.model.OrganizationAccount;
 import com.ll.model.PersonalAccount;
 
 @SpringBootTest
@@ -28,8 +29,7 @@ class AccountRepositoryTest {
   }
 
   @AfterEach
-  void tearDown
-  () {
+  void tearDown() {
     accountRepository.deleteAll();
   }
 
@@ -104,5 +104,47 @@ class AccountRepositoryTest {
     // Delete
     accountRepository.deletePersonalAccountByEmail("senior-dev@github.com");
     assertFalse(accountRepository.existsByEmail("senior-dev@github.com"));
+  }
+
+  /**
+   * 1. Create a Personal Account for Alice
+   * 2. Validate that the account was created
+   * 3. Create an Organization Account for Alice
+   * 4. Validate that the account was created
+   */
+  @Test
+  void testCompleteOrganizationAccountCRUDOperations() {
+    // Create Personal Account (Owner)
+    PersonalAccount aliceAccount = new PersonalAccount("alice@github.com", "alice123");
+    PersonalAccount savedAlice = accountRepository.savePersonalAccount(aliceAccount);
+    assertNotNull(savedAlice.getId());
+    assertEquals("alice@github.com", savedAlice.getEmail());
+
+    // Create Organization Account
+    OrganizationAccount orgAccount = new OrganizationAccount(savedAlice.getId(), "Alice's Org");
+    orgAccount.setDescription("Organization for testing");
+    OrganizationAccount savedOrg = accountRepository.saveOrganizationAccount(orgAccount);
+
+    // Verify Creation
+    assertNotNull(savedOrg.getId());
+    assertEquals("Alice's Org", savedOrg.getName());
+    assertEquals(savedAlice.getId(), savedOrg.getOwnerId());
+
+    // Read
+    var foundOrg = accountRepository.findOrganizationById(savedOrg.getId());
+    assertTrue(foundOrg.isPresent());
+    assertEquals(savedOrg.getId(), foundOrg.get().getId());
+    assertEquals("Alice's Org", foundOrg.get().getName());
+
+    // Update
+    foundOrg.get().setName("Alice's Updated Org");
+    foundOrg.get().setDescription("Updated description");
+    OrganizationAccount updatedOrg = accountRepository.saveOrganizationAccount(foundOrg.get());
+    assertEquals("Alice's Updated Org", updatedOrg.getName());
+    assertEquals("Updated description", updatedOrg.getDescription());
+
+    // Delete
+    accountRepository.deleteOrganizationById(updatedOrg.getId());
+    assertTrue(accountRepository.findOrganizationById(updatedOrg.getId()).isEmpty());
   }
 }
