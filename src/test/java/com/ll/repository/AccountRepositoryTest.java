@@ -123,7 +123,7 @@ class AccountRepositoryTest {
     assertEquals("alice@github.com", savedAlice.getEmail());
 
     // Create Organization Account
-    OrganizationAccount orgAccount = new OrganizationAccount(savedAlice.getId(), "Alice's Org");
+    OrganizationAccount orgAccount = new OrganizationAccount(savedAlice, "Alice's Org", "Organization for testing");
     orgAccount.setDescription("Organization for testing");
     OrganizationAccount savedOrg = accountRepository.saveOrganizationAccount(orgAccount);
 
@@ -176,7 +176,7 @@ class AccountRepositoryTest {
         new PersonalAccount("charlie@github.com", "charlie123"));
 
     // Create organization
-    OrganizationAccount orgAccount = new OrganizationAccount(aliceAccount.getId(), "Alice's Org");
+    OrganizationAccount orgAccount = new OrganizationAccount(aliceAccount, "Alice's Org", "Organization for testing");
     OrganizationAccount savedOrg = accountRepository.saveOrganizationAccount(orgAccount);
 
     // Verify organization creation

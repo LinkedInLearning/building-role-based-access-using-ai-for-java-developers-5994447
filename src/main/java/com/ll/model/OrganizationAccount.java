@@ -18,10 +18,11 @@ public class OrganizationAccount extends Account {
     this.members = new ArrayList<>();
   }
 
-  public OrganizationAccount(String ownerId, String name) {
+  public OrganizationAccount(PersonalAccount owner, String name, String description) {
     super(AccountType.ORGANIZATION);
-    this.ownerId = ownerId;
+    this.ownerId = owner.getId();
     this.name = name;
+    this.description = description;
     this.members = new ArrayList<>();
   }
 
